@@ -1,0 +1,69 @@
+#Libraries used:
+library(ggplot2)
+library(dplyr)
+library(readxl)
+library(gridExtra)
+library(grid)
+library(ggpubr)
+library(ggbreak)
+
+#Load your data (I will call mine "Data")
+
+# Select the order of your plots
+Data$Variable <- factor(Data$Variable, levels = c("Plot1", "Plot2", "Plot3", "Plot4","Plot5", "Plot6", "Plot7", "Plot8"))
+
+## Plots
+#Define the data, x axis, and y axis for your boxplot
+Boxplots <- ggplot(data = Data, aes(x = TimePoint, y = Value)) +
+#Define different colors and fills depending of the group
+  geom_boxplot(aes(color = Group, fill = Group)) +
+#Manual selection of the colors
+  scale_color_manual(values = c("#1F232C", "#1F232C")) +
+#Manual selection of the fill colors
+  scale_fill_manual(values = c("#9574b4", "#ffdb4f")) +
+#To define the theme 
+  theme_bw() +
+#Define the x scale: Here you write the name of your time points (time points should be uploaded as text to avoid problems in this step)
+  scale_x_discrete(limits = c("TimePoint1", "TimePoint2")) +
+#Define x, y and title labs if you want them
+  labs(x = " ", y = " ", title = " ") +
+#Theme
+  theme(
+#Text x customization
+    strip.text.x = element_text(size = 11, face = "bold"),
+#Plot title customization
+    plot.title = element_text(hjust = 0.5, size = 18, vjust = 1, face="bold", color = "#2C2C2C"),
+#Axis title customization
+    axis.title = element_text(size = 16, color = "#2C2C2C", hjust = 0.5),
+#Axis text customization
+    axis.text = element_text(size = 12),
+#Choose legent position, in this case at the bottom
+    legend.position = "bottom",
+#Define legend title if you want it, if not "element_blank()"
+    legend.title = element_blank(),
+#Define legend size
+    legend.key.size = unit(0.8, units = "cm"),
+#Legend text customization
+    legend.text = element_text(size = 12),
+#Define the margins as you desire 
+    plot.margin = margin(t = 10, r = 10, b = 10, l = 30)) +
+#Make a plot per "Variable" and put them together, free the y axis, then choose number of rows (2) and columns (4)
+  facet_wrap(~ Variable, scales = "free_y", nrow = 2, ncol = 4) +
+#Define the individual scales and breaks for each y axis
+  ggh4x::facetted_pos_scales(y = list(
+    Variable == "Plot1" ~ scale_y_continuous(limits = c(0, 4), breaks = c(0, 1, 2, 3, 4)),
+    Variable == "Plot2" ~ scale_y_continuous(limits = c(0, 0.8), breaks = c(0, 0.2, 0.4, 0.6, 0.8)),
+    Variable == "Plot3" ~ scale_y_continuous(limits = c(0, 2), breaks = c(0, 0.5, 1, 1.5, 2)),
+    Variable == "Plot4" ~ scale_y_continuous(limits = c(0, 0.16), breaks = c(0, 0.04, 0.08, 0.12, 0.16)),
+    Variable == "Plot5" ~ scale_y_continuous(limits = c(0, 4), breaks = c(0, 1, 2, 3, 4)),
+    Variable == "Plot6" ~ scale_y_continuous(limits = c(0, 0.4), breaks = c(0, 0.1, 0.2, 0.3, 0.4)),
+    Variable == "Plot7" ~ scale_y_continuous(limits = c(0, 8), breaks = c(0, 2, 4, 6, 8)),
+    Variable == "Plot8" ~ scale_y_continuous(limits = c(0, 4), breaks = c(0, 1, 2, 3, 4))
+  ))
+
+# Row titles: Name and customization 
+Row1Title <- textGrob("Title 1", rot = 90, gp = gpar(fontsize = 12, fontface = "bold"), vjust = 4.5)
+Row2Title <- textGrob("Title 2", rot = 90, gp = gpar(fontsize = 12, fontface = "bold"), vjust = 4.5)
+
+# Combine the plotswith the row titles 
+grid.arrange(arrangeGrob(Boxplots, left = grid.arrange(Row1Title, Row2Title, nrow = 2, heights = c(0.5, 0.5))))
