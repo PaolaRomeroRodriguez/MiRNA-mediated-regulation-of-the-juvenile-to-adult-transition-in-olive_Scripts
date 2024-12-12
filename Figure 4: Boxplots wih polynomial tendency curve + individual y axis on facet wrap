@@ -1,0 +1,75 @@
+#Libraries used:
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(ggfortify)
+library(gridExtra)
+library(grid)
+library(ggpubr)
+library(ggsignif)
+library(ggh4x)
+
+#Load your data, herein "Data"
+
+#Establish the order of your plots 
+Data$Variable <- factor(Data$Variable, levels = c("Plot1", "Plot2", "Plot3", "Plot4", "Plot5", "Plot6", "Plot7", "Plot8", "Plot9", "Plot10"))
+
+#Making the plots 
+#Select your desired data, and what will be represented in axis x and y 
+Plots <- ggplot(Data, aes(x = as.factor(Stage), y = Value)) +
+#Define the plot as a boxplot and select to fill the boxplots depending of the x axis variable: Stage 
+  geom_boxplot(aes(fill = as.factor(Stage))) +
+#Asing the title and x and y axis labels 
+  labs(x = "", y = "",  title = "") +
+#Establish the theme, I like theme_bw()
+  theme_bw() +
+#Customization 
+  theme(
+#Select legend position, in this case none
+    legend.position = "none",
+#Customization of x axis text
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 11),
+#Customization of y axis text
+    axis.text.y = element_text(size = 10),
+#Customization of y axis title 
+    axis.title.y = element_text(size = 10),  
+#Customization of plot title
+    plot.title = element_text(size = 18, hjust = 0.5, face = "bold"), 
+#Customization of the panels x text 
+    strip.text.x = element_text(size = 11, face = "bold"),  
+#Customization of the panels y text 
+    strip.text.y = element_text(size = 16, face = "bold"),  
+#Define the margins to adjust the plots 
+    plot.margin = margin(t = 20, r = 20, b = 20, l = 20)) +
+#Manual selection of the colors depending of the variable stage
+  scale_fill_manual(values = c("1" = "#ffdb4f", "2" = "#e4c168", "3" = "#caa882", "4" = "#b08e9b", "5" = "#9574b4")) +
+#Facet wrap for making a plot per Variable and put them together, free the y axis, then choose number of rows (2) and columns (5)
+  facet_wrap(~ Variable, scales = "free_y", nrow = 2, ncol = 5) +
+#Define the individual scales and breaks for each y axis (Numbers are just examples)
+  ggh4x::facetted_pos_scales(y = list(
+    Variable == "Plot1" ~ scale_y_continuous(limits = c(0, 12), breaks = c(0, 4, 8, 12)),
+    Variable == "Plot2" ~ scale_y_continuous(limits = c(0, 9), breaks = c(0, 3, 6, 9)),
+    Variable == "Plot3" ~ scale_y_continuous(limits = c(0, 9), breaks = c(0, 3, 6, 9)),
+    Variable == "Plot4" ~ scale_y_continuous(limits = c(0, 3), breaks = c(0, 1, 2, 3)),
+    Variable == "Plot5" ~ scale_y_continuous(limits = c(0, 3), breaks = c(0, 1, 2, 3)),
+    Variable == "Plot6" ~ scale_y_continuous(limits = c(0, 0.3), breaks = c(0, 0.1, 0.2, 0.3)),
+    Variable == "Plot7" ~ scale_y_continuous(limits = c(0, 0.3), breaks = c(0, 0.1, 0.2, 0.3)),
+    Variable == "Plot8" ~ scale_y_continuous(limits = c(0, 0.6), breaks = c(0, 0.2, 0.4, 0.6)),
+    Variable == "Plot9" ~ scale_y_continuous(limits = c(0, 1.2), breaks = c(0, 0.4, 0.8, 1.2)),
+    Variable == "Plot10" ~ scale_y_continuous(limits = c(0, 0.15), breaks = c(0, 0.05, 0.10, 0.15))
+  ))
+
+#For adding the tendency curves (polynomial model of degree 3)
+Plots <- Plots +
+  geom_smooth(data = Data,
+              aes(x = as.numeric(Stage), y = Value),
+              method = "lm",
+              formula = y ~ poly(x, 3),
+              se = FALSE, color = "#1F232C", size = 0.7)
+
+#Add individual titles to each row and customization of the title (rotation, size, bold, position)
+TitleRow1 <- textGrob("Title 1", rot = 90, gp = gpar(fontsize = 12, fontface = "bold"), vjust = 3.2)
+TitleRow2 <- textGrob("Title 2", rot = 90, gp = gpar(fontsize = 12, fontface = "bold"), vjust = 3.2)
+
+# Combine the plots with the row titles and stablish the number of rows 
+grid.arrange(arrangeGrob(Plots, left = grid.arrange(TitleRow1, TitleRow2, nrow = 2)))
